@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Dashboard</title>
+</head>
+<body>
+    <h2>Task Dashboard</h2>
+    <form action="/add_task/" method="post">
+        <label for="job_type">Select Job:</label>
+        <select name="job_type">
+            <option value="server_info">Server Info</option>
+            <option value="weather">Weather</option>
+        </select>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <h3>Task List</h3>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Job Type</th>
+            <th>Status</th>
+            <th>Result</th>
+        </tr>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.id }}</td>
+            <td>{{ task.job_type }}</td>
+            <td>{{ task.status }}</td>
+            <td>{{ task.result }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
