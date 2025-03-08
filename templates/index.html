@@ -41,7 +41,11 @@
         <tbody id="entry-list"></tbody>
     </table>
 
-    <button class="btn btn-success w-100 mt-3" onclick="runTasks()">Run All Tasks</button>
+    <div class="mt-3">
+        <input type="text" id="filename" class="form-control mb-2" placeholder="Filename (example.pkl)">
+        <button class="btn btn-success w-100" onclick="saveData()">Save Data</button>
+        <button class="btn btn-warning w-100 mt-2" onclick="loadData()">Load Data</button>
+    </div>
 </div>
 
 <script>
@@ -49,37 +53,33 @@ function fetchEntries() {
     $.get("/get_entries", function(data) {
         let rows = "";
         for (let id in data) {
-            rows += `<tr>
+            rows += `<tr id="row-${id}">
                 <td>${id}</td>
-                <td>${data[id].project_name}</td>
-                <td>${data[id].task_type}</td>
-                <td>${data[id].prompt}</td>
-                <td>${data[id].parameters}</td>
-                <td>${data[id].status}</td>
+                <td contenteditable="true" id="project-${id}">${data[id].project_name}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm" onclick="editEntry(${id})">Edit</button>
+                    <select id="task-${id}" class="form-control">
+                        <option value="Text Generation" ${data[id].task_type === "Text Generation" ? "selected" : ""}>Text Generation</option>
+                        <option value="Summarization" ${data[id].task_type === "Summarization" ? "selected" : ""}>Summarization</option>
+                        <option value="Translation" ${data[id].task_type === "Translation" ? "selected" : ""}>Translation</option>
+                        <option value="Question Answering" ${data[id].task_type === "Question Answering" ? "selected" : ""}>Question Answering</option>
+                    </select>
+                </td>
+                <td contenteditable="true" id="prompt-${id}">${data[id].prompt}</td>
+                <td contenteditable="true" id="parameters-${id}">${data[id].parameters}</td>
+                <td>
+                    <select id="status-${id}" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="editEntry(${id})">Save</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteEntry(${id})">Delete</button>
                 </td>
             </tr>`;
         }
         $("#entry-list").html(rows);
-    });
-}
-
-function addEntry() {
-    let data = {
-        project_name: $("#project_name").val(),
-        task_type: $("#task_type").val(),
-        prompt: $("#prompt").val(),
-        parameters: $("#parameters").val()
-    };
-    $.post("/add_entry", JSON.stringify(data), fetchEntries);
-}
-
-function runTasks() {
-    $.post("/run_tasks", function() {
-        alert("All tasks started!");
-        fetchEntries();
     });
 }
 
