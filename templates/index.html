@@ -122,14 +122,9 @@ function addEntry() {
                     </td>
                     <td contenteditable="true" id="prompt-${id}">${entry.prompt}</td>
                     <td contenteditable="true" id="parameters-${id}">${entry.parameters}</td>
+                    <td id="status-${id}">Pending</td>
                     <td>
-                        <select id="status-${id}" class="form-control">
-                            <option value="Pending">Pending</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </td>
-                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="startTask(${id})">Start</button>
                         <button class="btn btn-success btn-sm" onclick="editEntry(${id})">Save</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteEntry(${id})">Delete</button>
                     </td>
@@ -227,6 +222,34 @@ function loadData() {
             }
         }
     });
+}
+
+function startTask(id) {
+    $.ajax({
+        url: `/start_task/${id}`,
+        type: "POST",
+        success: function(response) {
+            if (response.success) {
+                $(`#status-${id}`).html("In Progress"); // Update status di tabel
+                checkTaskStatus(id); // Cek status hingga selesai
+            }
+        }
+    });
+}
+
+function checkTaskStatus(id) {
+    let interval = setInterval(() => {
+        $.ajax({
+            url: `/check_task_status/${id}`,
+            type: "GET",
+            success: function(response) {
+                if (response.status === "Completed") {
+                    $(`#status-${id}`).html("Completed");
+                    clearInterval(interval); // Hentikan pengecekan jika selesai
+                }
+            }
+        });
+    }, 2000);
 }
 
 $(document).ready(fetchEntries);
