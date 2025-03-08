@@ -3,74 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
+    <title>Task Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 600px;
-            margin-top: 50px;
-        }
-        .card {
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </head>
-<body>
+<body class="bg-light">
 
-<div class="container">
+<div class="container mt-4">
+    <h2 class="text-center">Task Manager Dashboard</h2>
+
     <div class="card p-4">
-        <h3 class="text-center">Task Submission</h3>
-        <div class="mb-3">
-            <label for="prompt" class="form-label">Enter your prompt:</label>
-            <input type="text" id="prompt" class="form-control" placeholder="Ask anything to GPT...">
-        </div>
-        <button class="btn btn-primary w-100" onclick="addTask()">Submit Task</button>
-        <hr>
-        <h5 class="text-center">Completed Tasks: <span id="completed-count">0</span></h5>
+        <h5>Add New Entry</h5>
+        <input type="text" id="project_name" class="form-control mb-2" placeholder="Project Name">
+        <select id="task_type" class="form-control mb-2">
+            {% for task in task_types %}
+            <option value="{{ task }}">{{ task }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" id="prompt" class="form-control mb-2" placeholder="Prompt">
+        <input type="text" id="parameters" class="form-control mb-2" placeholder="Parameters">
+        <button class="btn btn-primary w-100" onclick="addEntry()">Add Entry</button>
     </div>
+
+    <h5 class="mt-4">Saved Entries</h5>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Project</th>
+                <th>Type</th>
+                <th>Prompt</th>
+                <th>Parameters</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="entry-list"></tbody>
+    </table>
+
+    <button class="btn btn-success w-100 mt-3" onclick="runTasks()">Run All Tasks</button>
 </div>
 
 <script>
-    function addTask() {
-        let prompt = $("#prompt").val();
-        if (prompt === "") {
-            alert("Please enter a prompt!");
-            return;
+function fetchEntries() {
+    $.get("/get_entries", function(data) {
+        let rows = "";
+        for (let id in data) {
+            rows += `<tr>
+                <td>${id}</td>
+                <td>${data[id].project_name}</td>
+                <td>${data[id].task_type}</td>
+                <td>${data[id].prompt}</td>
+                <td>${data[id].parameters}</td>
+                <td>${data[id].status}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editEntry(${id})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteEntry(${id})">Delete</button>
+                </td>
+            </tr>`;
         }
+        $("#entry-list").html(rows);
+    });
+}
 
-        $.ajax({
-            url: "/add_task",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({ prompt: prompt }),
-            success: function(response) {
-                alert("Task submitted successfully!");
-                $("#prompt").val("");  // Clear input field
-                updateTaskStatus();
-            },
-            error: function(error) {
-                alert("Error submitting task.");
-            }
-        });
-    }
+function addEntry() {
+    let data = {
+        project_name: $("#project_name").val(),
+        task_type: $("#task_type").val(),
+        prompt: $("#prompt").val(),
+        parameters: $("#parameters").val()
+    };
+    $.post("/add_entry", JSON.stringify(data), fetchEntries);
+}
 
-    function updateTaskStatus() {
-        $.ajax({
-            url: "/task_status",
-            type: "GET",
-            success: function(response) {
-                $("#completed-count").text(response.completed_tasks);
-            }
-        });
-    }
+function runTasks() {
+    $.post("/run_tasks", function() {
+        alert("All tasks started!");
+        fetchEntries();
+    });
+}
 
-    // Auto update every 5 seconds
-    setInterval(updateTaskStatus, 5000);
+$(document).ready(fetchEntries);
 </script>
 
 </body>
