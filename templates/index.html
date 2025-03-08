@@ -83,6 +83,71 @@ function fetchEntries() {
     });
 }
 
+function addEntry() {
+    let projectName = $("#project_name").val();
+    let taskType = $("#task_type").val();
+    let prompt = $("#prompt").val();
+    let parameters = $("#parameters").val();
+
+    if (!projectName || !taskType || !prompt || !parameters) {
+        alert("Please fill all fields!");
+        return;
+    }
+
+    $.ajax({
+        url: "/add_entry",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            project_name: projectName,
+            task_type: taskType,
+            prompt: prompt,
+            parameters: parameters
+        }),
+        success: function(response) {
+            if (response.success) {
+                let id = response.id;
+                let entry = response.entry;
+
+                let newRow = `<tr id="row-${id}">
+                    <td>${id}</td>
+                    <td contenteditable="true" id="project-${id}">${entry.project_name}</td>
+                    <td>
+                        <select id="task-${id}" class="form-control">
+                            <option value="Text Generation" ${entry.task_type === "Text Generation" ? "selected" : ""}>Text Generation</option>
+                            <option value="Summarization" ${entry.task_type === "Summarization" ? "selected" : ""}>Summarization</option>
+                            <option value="Translation" ${entry.task_type === "Translation" ? "selected" : ""}>Translation</option>
+                            <option value="Question Answering" ${entry.task_type === "Question Answering" ? "selected" : ""}>Question Answering</option>
+                        </select>
+                    </td>
+                    <td contenteditable="true" id="prompt-${id}">${entry.prompt}</td>
+                    <td contenteditable="true" id="parameters-${id}">${entry.parameters}</td>
+                    <td>
+                        <select id="status-${id}" class="form-control">
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="editEntry(${id})">Save</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteEntry(${id})">Delete</button>
+                    </td>
+                </tr>`;
+
+                $("#entry-list").append(newRow);
+
+                $("#project_name").val("");
+                $("#task_type").val("Text Generation");
+                $("#prompt").val("");
+                $("#parameters").val("");
+            }
+        }
+    });
+}
+
+
+
 $(document).ready(fetchEntries);
 </script>
 
