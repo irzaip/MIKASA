@@ -146,7 +146,88 @@ function addEntry() {
     });
 }
 
+function deleteEntry(id) {
+    $.ajax({
+        url: `/delete_entry/${id}`,
+        type: "DELETE",
+        success: function(response) {
+            if (response.success) {
+                $(`#row-${id}`).remove();  // Hapus dari tabel
+            } else {
+                alert("Error deleting entry!");
+            }
+        }
+    });
+}
 
+function saveData() {
+    let filename = $("#filename").val().trim();
+    if (!filename) {
+        alert("Please enter a filename!");
+        return;
+    }
+    
+    $.ajax({
+        url: "/save_data",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ filename: filename }),
+        success: function(response) {
+            alert(response.message);
+        }
+    });
+}
+
+function loadData() {
+    let filename = $("#filename").val().trim();
+    if (!filename) {
+        alert("Please enter a filename!");
+        return;
+    }
+    
+    $.ajax({
+        url: "/load_data",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ filename: filename }),
+        success: function(response) {
+            if (response.success) {
+                let data = response.database;
+                let rows = "";
+                for (let id in data) {
+                    rows += `<tr id="row-${id}">
+                        <td>${id}</td>
+                        <td contenteditable="true" id="project-${id}">${data[id].project_name}</td>
+                        <td>
+                            <select id="task-${id}" class="form-control">
+                                <option value="Text Generation" ${data[id].task_type === "Text Generation" ? "selected" : ""}>Text Generation</option>
+                                <option value="Summarization" ${data[id].task_type === "Summarization" ? "selected" : ""}>Summarization</option>
+                                <option value="Translation" ${data[id].task_type === "Translation" ? "selected" : ""}>Translation</option>
+                                <option value="Question Answering" ${data[id].task_type === "Question Answering" ? "selected" : ""}>Question Answering</option>
+                            </select>
+                        </td>
+                        <td contenteditable="true" id="prompt-${id}">${data[id].prompt}</td>
+                        <td contenteditable="true" id="parameters-${id}">${data[id].parameters}</td>
+                        <td>
+                            <select id="status-${id}" class="form-control">
+                                <option value="Pending" ${data[id].status === "Pending" ? "selected" : ""}>Pending</option>
+                                <option value="In Progress" ${data[id].status === "In Progress" ? "selected" : ""}>In Progress</option>
+                                <option value="Completed" ${data[id].status === "Completed" ? "selected" : ""}>Completed</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="editEntry(${id})">Save</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteEntry(${id})">Delete</button>
+                        </td>
+                    </tr>`;
+                }
+                $("#entry-list").html(rows);
+            } else {
+                alert("File not found!");
+            }
+        }
+    });
+}
 
 $(document).ready(fetchEntries);
 </script>
