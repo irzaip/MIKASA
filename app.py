@@ -86,6 +86,15 @@ def load_data():
         return jsonify({"success": True, "database": database})
     return jsonify({"error": "File not found"}), 404
 
+@app.route("/start_process", methods=["POST"])
+def start_process()
+    filename = request.json.get("filename", "default.pkl")
+    if load_from_file(filename):
+        return print(filename)
+    return jsonify({"error": "Starting error"})
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
