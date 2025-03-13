@@ -2,8 +2,6 @@ import celery
 import redis
 import openai
 from flask import Flask, request, jsonify
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage, HumanMessage
 
 # Konfigurasi OpenAI API
 openai.api_key = "your-openai-api-key"
