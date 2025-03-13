@@ -1,6 +1,6 @@
 @echo off
-echo Starting Redis Server...
-start "" redis-server
+#echo Starting Redis Server...
+#start "" redis-server
 
 timeout /t 3
 

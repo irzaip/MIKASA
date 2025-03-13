@@ -155,13 +155,14 @@ function deleteEntry(id) {
     });
 }
 
+// Modifikasi fungsi saveData untuk juga menyimpan CSV lokal
 function saveData() {
     let filename = $("#filename").val().trim();
     if (!filename) {
         alert("Please enter a filename!");
         return;
     }
-    
+
     $.ajax({
         url: "/save_data",
         type: "POST",
@@ -169,8 +170,39 @@ function saveData() {
         data: JSON.stringify({ filename: filename }),
         success: function(response) {
             alert(response.message);
+            downloadCSV(); // Simpan data lokal dalam format CSV
         }
     });
+}
+
+function downloadCSV() {
+    let rows = [];
+    let headers = ["ID", "Project", "Type", "Prompt", "Parameters", "Status"];
+    rows.push(headers.join(",")); // Tambahkan header ke CSV
+
+    $("#entry-list tr").each(function() {
+        let row = [];
+        $(this).find("td").each(function(index) {
+            if (index === 2 || index === 5) {
+                // Untuk dropdown select, ambil value yang dipilih
+                row.push($(this).find("select").val());
+            } else {
+                row.push($(this).text().trim());
+            }
+        });
+        rows.push(row.join(","));
+    });
+
+    let csvContent = rows.join("\n");
+    let blob = new Blob([csvContent], { type: "text/csv" });
+    let url = URL.createObjectURL(blob);
+
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "entries.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 function loadData() {
@@ -251,6 +283,8 @@ function checkTaskStatus(id) {
         });
     }, 2000);
 }
+
+
 
 $(document).ready(fetchEntries);
 </script>

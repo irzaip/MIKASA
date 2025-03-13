@@ -13,7 +13,7 @@ python app.py &  # Menjalankan Flask API di background
 sleep 2
 
 # Buka browser secara otomatis (opsional, hapus jika tidak perlu)
-xdg-open http://127.0.0.1:5000/
+# xdg-open http://127.0.0.1:5000/
 
 echo "All services started successfully!"
 wait  # Menunggu semua proses selesai
